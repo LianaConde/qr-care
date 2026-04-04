@@ -1,24 +1,43 @@
-import logo from './logo.svg';
-import './App.css';
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { auth } from "./firebase";
+import { onAuthStateChanged } from "firebase/auth";
+
+import Navbar from "./components/Navbar";
+import Cadastro from "./pages/Cadastro";
+import QRCodeCreator from "./pages/QRCodeCreator";
+import MeuQRs from "./pages/MeuQRs";
+import QRPublicView from "./pages/QRPublicView";
 
 function App() {
+  const [usuario, setUsuario] = useState(null);
+
+  useEffect(() => {
+    onAuthStateChanged(auth, (user) => {
+      setUsuario(user);
+    });
+  }, []);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <BrowserRouter>
+      <Navbar usuario={usuario} />
+
+      <Routes>
+        <Route path="/qr/:id" element={<QRPublicView />} />
+        <Route
+          path="/"
+          element={usuario ? <QRCodeCreator usuario={usuario} /> : <Cadastro setUsuario={setUsuario} />}
+        />
+        <Route
+          path="/criar"
+          element={usuario ? <QRCodeCreator usuario={usuario} /> : <Cadastro setUsuario={setUsuario} />}
+        />
+        <Route
+          path="/meus"
+          element={usuario ? <MeuQRs usuario={usuario} /> : <Cadastro setUsuario={setUsuario} />}
+        />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
