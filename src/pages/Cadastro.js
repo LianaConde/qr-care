@@ -183,8 +183,12 @@ const card = {
   padding: 30,
   borderRadius: theme.radius.lg,
   width: "100%",
+  maxWidth: "100%",
+  minWidth: 0,
+  boxSizing: "border-box",
   boxShadow: theme.colors.shadow,
-  border: `1px solid ${theme.colors.border}`
+  border: `1px solid ${theme.colors.border}`,
+  overflow: "hidden"
 };
 
 const header = {
@@ -214,6 +218,9 @@ const subtitle = {
 
 const input = {
   width: "100%",
+  maxWidth: "100%",
+  minWidth: 0,
+  boxSizing: "border-box",
   padding: 14,
   marginBottom: 12,
   borderRadius: 14,

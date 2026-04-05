@@ -1,16 +1,17 @@
 import { useEffect, useState } from "react";
 import { db } from "../firebase";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import { collection, deleteDoc, doc, getDocs, query, where } from "firebase/firestore";
 import { QRCodeCanvas } from "qrcode.react";
 import { theme } from "../theme";
 
 function MeuQRs({ usuario }) {
   const [qrs, setQrs] = useState([]);
+  const [apagandoId, setApagandoId] = useState("");
 
   useEffect(() => {
     if (!usuario) return;
 
-    const buscar = async () => {
+    const buscarQrs = async () => {
       const q = query(
         collection(db, "qrcodes"),
         where("usuarioId", "==", usuario.uid)
@@ -24,8 +25,27 @@ function MeuQRs({ usuario }) {
       setQrs(lista);
     };
 
-    buscar();
+    buscarQrs();
   }, [usuario]);
+
+  const apagarQr = async (id) => {
+    const confirmar = window.confirm("Tem certeza que deseja apagar este QR Code?");
+
+    if (!confirmar) {
+      return;
+    }
+
+    try {
+      setApagandoId(id);
+      await deleteDoc(doc(db, "qrcodes", id));
+      setQrs((listaAtual) => listaAtual.filter((qr) => qr.id !== id));
+    } catch (err) {
+      console.error(err);
+      alert("Nao foi possivel apagar o QR Code.");
+    } finally {
+      setApagandoId("");
+    }
+  };
 
   return (
     <div style={container}>
@@ -60,6 +80,14 @@ function MeuQRs({ usuario }) {
               >
                 Abrir visualizacao
               </a>
+              <button
+                type="button"
+                onClick={() => apagarQr(qr.id)}
+                style={deleteButton(apagandoId === qr.id)}
+                disabled={apagandoId === qr.id}
+              >
+                {apagandoId === qr.id ? "Apagando..." : "Apagar QR Code"}
+              </button>
             </div>
           ))}
         </div>
@@ -145,6 +173,19 @@ const link = {
   padding: "12px 14px",
   borderRadius: 12
 };
+
+const deleteButton = (apagando) => ({
+  width: "100%",
+  marginTop: 10,
+  border: "none",
+  borderRadius: 12,
+  padding: "12px 14px",
+  background: apagando ? "#D8A1A1" : "#FF6B6B",
+  color: "#FFFFFF",
+  fontWeight: "bold",
+  cursor: apagando ? "not-allowed" : "pointer",
+  opacity: apagando ? 0.8 : 1
+});
 
 const emptyState = {
   background: theme.colors.surface,
